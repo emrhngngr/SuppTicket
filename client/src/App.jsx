@@ -10,6 +10,7 @@ import LoginPage from './pages/auth/LoginPage'
 import PricingPage from './pages/landing/PricingPage/index'
 import ContactPage from './pages/landing/ContactPage/index'
 import NotFound from './pages/NotFound'
+import Dashboard from './pages/dashboard/index'
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/login" element={<LoginPage/>} />
         <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
         <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+        <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
         <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
       </Routes>
     </Router>

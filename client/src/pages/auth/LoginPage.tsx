@@ -1,52 +1,71 @@
-import axios from "axios";
-import { ArrowLeft, ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 import Swal from "sweetalert2";
+import { loginFailure, loginStart, loginSuccess } from '../../store/features/userSlice'; // Actions import et
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); // Use React Router's navigation
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
+    dispatch(loginStart());
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/users/login",
-        {
-          email,
-          password,
-        }
-      );
-
-      // Token'ı localStorage'da saklıyoruz
-      // localStorage.setItem("token", response.data.token);
-
-      // Başarı mesajı göster
-      Swal.fire({
-        title: "Başarılı!",
-        text: "Başarıyla giriş yaptınız.",
-        icon: "success",
-        confirmButtonText: "Tamam",
+      const res = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        body: formData,
       });
-
-      // Kullanıcıyı yönlendiriyoruz
-      window.location.href = "/user/dashboard";
+  
+      const data = await res.json();
+      console.log("data: ", data);
+  
+      if (res.ok && data.success) {
+        // Store user data AND token in Redux
+        dispatch(loginSuccess({
+          token: data.token
+        }));
+        
+        // Store token in localStorage for persistence
+        localStorage.setItem('token', data.token);
+        
+        Swal.fire({
+          title: "Başarılı!",
+          text: "Başarıyla giriş yaptınız.",
+          icon: "success",
+          confirmButtonText: "Tamam",
+        });
+        
+        // Use React Router navigation instead of window.location
+        navigate('/dashboard');
+      } else {
+        dispatch(loginFailure(data.message || 'Giriş sırasında bir hata oluştu.'));
+        Swal.fire({
+          title: "Hata!",
+          text: data.message || "Giriş sırasında bir hata oluştu.",
+          icon: "error",
+          confirmButtonText: "Tamam",
+        });
+      }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || "Giriş sırasında bir hata oluştu.";
-
-      // Hata mesajı göster
+      dispatch(loginFailure('Sunucuya bağlanırken bir hata oluştu.'));
       Swal.fire({
         title: "Hata!",
-        text: errorMessage,
+        text: "Sunucuya bağlanırken bir hata oluştu.",
         icon: "error",
         confirmButtonText: "Tamam",
       });
     }
   };
+  
 
   return (
     <div className="flex justify-between min-h-screen h-full w-full gap-x-12">
@@ -66,7 +85,7 @@ const LoginPage = () => {
                 </label>
 
                 <input
-                  type="email"
+                  type="text"
                   className="w-full bg-transparent text-black font-normal placeholder:font-light group-focus-within:text-blue-600"
                   id="email"
                   value={email}

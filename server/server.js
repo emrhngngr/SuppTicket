@@ -12,6 +12,7 @@ const app = express();
 
 // Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors());
 
@@ -21,6 +22,8 @@ testConnection();
 // Mount routes
 app.use("/api/home", require("./routes/homeRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+
 
 // 404 middleware
 app.use((req, res, next) => {

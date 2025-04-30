@@ -23,6 +23,8 @@ testConnection();
 app.use("/api/home", require("./routes/homeRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/tickets", require("./routes/ticketRoutes"))
+app.use("/api/topics", require("./routes/topicRoutes"))
 
 
 // 404 middleware

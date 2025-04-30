@@ -3,7 +3,7 @@ const {
   getAllUsers,
   deleteUser,
   createUser,
-} = require("../controllers/adminController");
+} = require("./adminController");
 const router = express.Router();
 
 // Admin işlemleri

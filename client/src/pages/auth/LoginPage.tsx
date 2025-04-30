@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate from react
 import Swal from "sweetalert2";
 import { loginFailure, loginStart, loginSuccess } from '../../store/features/userSlice'; // Actions import et
 
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -1,12 +1,11 @@
-const jwt = require("jsonwebtoken");
 
-// Token generation helper function
+// utils/generateToken.js
+const jwt = require('jsonwebtoken');
+
 const generateToken = (email) => {
-  const date = new Date();
-  const token = jwt.sign({ email, date }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
+  return jwt.sign({ email }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
   });
-  return token;
 };
 
 module.exports = generateToken;

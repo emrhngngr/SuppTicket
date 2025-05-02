@@ -1,8 +1,9 @@
-import React from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
-const DashboardLayout = ({ children }) => {
+import { ReactNode } from 'react';
+
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />

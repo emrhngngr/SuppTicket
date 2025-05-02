@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 import Swal from "sweetalert2";
-import { loginFailure, loginStart, loginSuccess } from '../../store/features/userSlice'; // Actions import et
 
 
 const LoginPage = () => {
@@ -12,31 +11,32 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Use React Router's navigation
 
-  const handleSubmit = async (e) => {
+  interface LoginResponse {
+    success: boolean;
+    token?: string;
+    message?: string;
+    user?: Record<string, any>;
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
   
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
 
-    dispatch(loginStart());
     try {
       const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
         body: formData,
       });
   
-      const data = await res.json();
+      const data: LoginResponse = await res.json();
       console.log("data: ", data);
   
       if (res.ok && data.success) {
-        // Store user data AND token in Redux
-        dispatch(loginSuccess({
-          token: data.token
-        }));
-        
-        // Store token in localStorage for persistence
-        localStorage.setItem('token', data.token);
+        localStorage.setItem('token', data.token || '');
+        localStorage.setItem('user', JSON.stringify(data.user || {}));
         
         Swal.fire({
           title: "Başarılı!",
@@ -48,7 +48,6 @@ const LoginPage = () => {
         // Use React Router navigation instead of window.location
         navigate('/dashboard');
       } else {
-        dispatch(loginFailure(data.message || 'Giriş sırasında bir hata oluştu.'));
         Swal.fire({
           title: "Hata!",
           text: data.message || "Giriş sırasında bir hata oluştu.",
@@ -57,7 +56,6 @@ const LoginPage = () => {
         });
       }
     } catch (err) {
-      dispatch(loginFailure('Sunucuya bağlanırken bir hata oluştu.'));
       Swal.fire({
         title: "Hata!",
         text: "Sunucuya bağlanırken bir hata oluştu.",

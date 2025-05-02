@@ -4,8 +4,6 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
 
 import MainLayout from "./components/layouts/main/MainLayout";
-
-import DashboardLayout from "./components/layouts/dashboard/DashboardLayout";
 import ThemeProvider from "./context/ThemeContext";
 import LoginPage from "./pages/auth/LoginPage";
 import Dashboard from "./pages/dashboard/index";
@@ -14,9 +12,14 @@ import HomePage from "./pages/landing/HomePage/index";
 import PricingPage from "./pages/landing/PricingPage/index";
 import NotFound from "./pages/NotFound";
 import AuthProvider from "./providers/AuthProvider";
-import Topics from "./pages/dashboard/pages/topics/index";
+
+import Companies from "./pages/dashboard/pages/companies/index";
 import Tickets from "./pages/dashboard/pages/tickets/index";
-import Users from "./pages/dashboard/pages/users/index"
+import Topics from "./pages/dashboard/pages/topics/index";
+import Users from "./pages/dashboard/pages/users/index";
+
+import { userRoutes } from "./routes/userRoutes";
+import DashboardWrapper from "./components/layouts/dashboard/DashboardWrapper";
 
 function App() {
   useEffect(() => {
@@ -33,75 +36,27 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <MainLayout>
-                <HomePage />
-              </MainLayout>
-            }
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/pricing"
-            element={
-              <MainLayout>
-                <PricingPage />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <MainLayout>
-                <ContactPage />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/topics"
-            element={
-              <DashboardLayout>
-                <Topics />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/tickets"
-            element={
-              <DashboardLayout>
-                <Tickets />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <DashboardLayout>
-                <Users />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <MainLayout>
-                <NotFound />
-              </MainLayout>
-            }
-          />
-        </Routes>
-      </Router>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<MainLayout><HomePage /></MainLayout>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/pricing" element={<MainLayout><PricingPage /></MainLayout>} />
+            <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+
+            {/* User Routes */}
+            {userRoutes.map(({ path, element }) => (
+              <Route
+                key={path}
+                path={path}
+                element={<DashboardWrapper>{element}</DashboardWrapper>}
+              />
+            ))}
+
+            {/* 404 */}
+            <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+          </Routes>
+        </Router>
       </AuthProvider>
     </ThemeProvider>
   );

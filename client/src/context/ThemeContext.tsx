@@ -1,10 +1,12 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 
 // Create Theme Context
-export const ThemeContext = createContext();
+export const ThemeContext = createContext({
+  darkMode: false,
+  toggleDarkMode: () => {},
+});
 
-// Theme Provider Component
-export const ThemeProvider = ({ children }) => {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(false);
 
   // Check for user's saved preference or system preference on component mount

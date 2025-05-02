@@ -7,7 +7,7 @@ const upload = multer();
 const router = express.Router();
 
 // Public routes
-router.get("/tickets", protect, getTickets);
+// router.get("/tickets", protect, getTickets);
 
 // // Protected routes
 // router.get('/me', protect, getMe);

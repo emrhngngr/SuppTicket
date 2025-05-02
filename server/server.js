@@ -1,3 +1,4 @@
+// server.js (updated version)
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
@@ -20,12 +21,12 @@ app.use(cors());
 testConnection();
 
 // Mount routes
-app.use("/api/home", require("./routes/homeRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/companies", require("./routes/companyRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/tickets", require("./routes/ticketRoutes"))
-app.use("/api/topics", require("./routes/topicRoutes"))
-
+app.use("/api/tickets", require("./routes/ticketRoutes"));
+app.use("/api/topics", require("./routes/topicRoutes"));
+app.use("/api/home", require("./routes/homeRoutes"));
 
 // 404 middleware
 app.use((req, res, next) => {

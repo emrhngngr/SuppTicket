@@ -1,7 +1,7 @@
 // routes/userRoutes.js (updated version)
 const express = require('express');
 const { register, login, getMe } = require('../controllers/userController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, protectSuperAdmin } = require('../middleware/authMiddleware');
 const multer = require('multer');
 
 const upload = multer();

@@ -89,7 +89,7 @@ const getCompanyById = async (req, res) => {
 // Only accessible to super_admin (role_id = 1)
 const createCompany = async (req, res) => {
   try {
-    const { name, status = 'active', licenseType, startDate, expiryDate } = req.body;
+    const { name, status, licenseType, startDate, expiryDate } = req.body;
 
     if (!name || !licenseType || !startDate || !expiryDate) {
       return res.status(400).json({
@@ -99,7 +99,7 @@ const createCompany = async (req, res) => {
     }
 
     // Start a transaction
-    await pool.execute('START TRANSACTION');
+    await pool.query('START TRANSACTION');
 
     // Create company
     const [companyResult] = await pool.execute(
@@ -108,7 +108,7 @@ const createCompany = async (req, res) => {
     );
 
     const companyId = companyResult.insertId;
-
+    console.log("licenseType ==> ", licenseType);
     // Create license for the company
     await pool.execute(
       'INSERT INTO licenses (company_id, type, start_date, expiry_date, status) VALUES (?, ?, ?, ?, ?)',
@@ -116,7 +116,7 @@ const createCompany = async (req, res) => {
     );
 
     // Commit transaction
-    await pool.execute('COMMIT');
+    await pool.query('COMMIT');
 
     return res.status(201).json({
       success: true,
@@ -125,7 +125,7 @@ const createCompany = async (req, res) => {
     });
   } catch (error) {
     // Rollback transaction on error
-    await pool.execute('ROLLBACK');
+    await pool.query('ROLLBACK');
     
     console.error('Error creating company:', error);
     return res.status(500).json({

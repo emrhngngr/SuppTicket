@@ -108,6 +108,25 @@ const getMe = async (req, res) => {
   }
 };
 
+// Get all users (for super admin)
+const getUsers = async (req, res) => {
+  try {
+    const result = await userModel.getUsers(req.companyPool);
+
+    if (!result.success) {
+      return res.status(404).json(result);
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Get users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Kullanıcı bilgileri alınırken hata oluştu",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,

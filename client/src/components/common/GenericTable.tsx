@@ -1,5 +1,15 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from 'lucide-react'; // Assuming 'lucide-react' is the correct library
-import React, { ReactNode, useEffect, useState } from 'react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+  X,
+} from "lucide-react"; // Assuming 'lucide-react' is the correct library
+import React, { ReactNode, useEffect, useState } from "react";
 
 // Define types for props
 interface Column {
@@ -7,7 +17,7 @@ interface Column {
   id?: string;
   header?: string | ReactNode;
   sortable?: boolean;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
   width?: string;
   className?: string;
   cell?: (row: any) => ReactNode;
@@ -73,10 +83,10 @@ interface GenericTableProps {
   stickyHeader?: boolean;
   exportOptions?: ExportOption[];
   defaultSortColumn?: string;
-  defaultSortDirection?: 'asc' | 'desc';
+  defaultSortDirection?: "asc" | "desc";
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
-  onSortChange?: (column: string, direction: 'asc' | 'desc') => void;
+  onSortChange?: (column: string, direction: "asc" | "desc") => void;
   onSearchChange?: (searchTerm: string) => void;
   currentPage?: number;
   totalItems?: number;
@@ -124,10 +134,16 @@ const GenericTable: React.FC<GenericTableProps> = ({
   renderBottomToolbar,
 }) => {
   // İç state yönetimi (server-side değilse)
-  const [currentPage, setCurrentPage] = useState<number>(externalCurrentPage || 1);
+  const [currentPage, setCurrentPage] = useState<number>(
+    externalCurrentPage || 1
+  );
   const [pageSize, setPageSize] = useState<number>(initialPageSize);
-  const [sortColumn, setSortColumn] = useState<string | undefined>(defaultSortColumn);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(defaultSortDirection);
+  const [sortColumn, setSortColumn] = useState<string | undefined>(
+    defaultSortColumn
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+    defaultSortDirection
+  );
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<any[]>(data);
@@ -141,38 +157,47 @@ const GenericTable: React.FC<GenericTableProps> = ({
   useEffect(() => {
     if (!serverSide) {
       let result = [...data];
-      
+
       // Arama filtresi uygula
       if (searchTerm) {
-        result = result.filter(item => {
-          return columns.some(column => {
-            const value = column.accessor ? item[column.accessor] : column.getValue?.(item);
-            return value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
+        result = result.filter((item) => {
+          return columns.some((column) => {
+            const value = column.accessor
+              ? item[column.accessor]
+              : column.getValue?.(item);
+            return value
+              ?.toString()
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase());
           });
         });
       }
-      
+
       // Sıralama uygula
       if (sortColumn && sortable) {
-        const column = columns.find(col => col.accessor === sortColumn || col.id === sortColumn);
+        const column = columns.find(
+          (col) => col.accessor === sortColumn || col.id === sortColumn
+        );
         if (column) {
           const accessor = column.accessor || column.id;
-          const getSortValue = column.getSortValue || ((item: any) => accessor ? item[accessor] : undefined);
-          
+          const getSortValue =
+            column.getSortValue ||
+            ((item: any) => (accessor ? item[accessor] : undefined));
+
           result.sort((a, b) => {
             const aValue = getSortValue(a);
             const bValue = getSortValue(b);
-            
+
             if (aValue === bValue) return 0;
-            
+
             const compareResult = aValue > bValue ? 1 : -1;
             return sortDirection === "asc" ? compareResult : -compareResult;
           });
         }
       }
-      
+
       setFilteredData(result);
-      
+
       // Sayfa değişimi sonrası seçili öğeleri temizle
       setSelectedRows([]);
     }
@@ -183,7 +208,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
     if (serverSide) {
       return data;
     }
-    
+
     const startIndex = (currentPage - 1) * pageSize;
     return filteredData.slice(startIndex, startIndex + pageSize);
   };
@@ -191,7 +216,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Sayfa değiştirme
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
-    
+
     setCurrentPage(page);
     if (onPageChange) onPageChange(page);
   };
@@ -206,7 +231,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Sıralama değiştirme
   const handleSort = (column: Column) => {
     if (!sortable || !column.sortable) return;
-    
+
     const columnId = column.accessor || column.id;
     if (sortColumn === columnId) {
       const newDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -230,13 +255,13 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Satır seçme işlevi
   const handleSelectRow = (id: any) => {
     if (!selectable) return;
-    
-    setSelectedRows(prev => {
+
+    setSelectedRows((prev) => {
       const isSelected = prev.includes(id);
       const newSelection = isSelected
-        ? prev.filter(rowId => rowId !== id)
+        ? prev.filter((rowId) => rowId !== id)
         : [...prev, id];
-        
+
       if (onSelectionChange) onSelectionChange(newSelection);
       return newSelection;
     });
@@ -245,16 +270,16 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Tüm satırları seçme/seçimi kaldırma
   const handleSelectAllRows = () => {
     if (!selectable) return;
-    
+
     const currentData = getCurrentPageData();
-    const allRowIds = currentData.map(row => row.id);
-    
-    const allSelected = allRowIds.every(id => selectedRows.includes(id));
-    
-    const newSelection = allSelected ? 
-      selectedRows.filter(id => !allRowIds.includes(id)) : 
-      [...new Set([...selectedRows, ...allRowIds])];
-    
+    const allRowIds = currentData.map((row) => row.id);
+
+    const allSelected = allRowIds.every((id) => selectedRows.includes(id));
+
+    const newSelection = allSelected
+      ? selectedRows.filter((id) => !allRowIds.includes(id))
+      : [...new Set([...selectedRows, ...allRowIds])];
+
     setSelectedRows(newSelection);
     if (onSelectionChange) onSelectionChange(newSelection);
   };
@@ -262,14 +287,16 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Sıralama simgesini oluşturma
   const renderSortIcon = (column: Column) => {
     const columnId = column.accessor || column.id;
-    
+
     if (sortColumn !== columnId) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
     }
-    
-    return sortDirection === "asc" 
-      ? <ArrowUp className="ml-2 h-4 w-4" />
-      : <ArrowDown className="ml-2 h-4 w-4" />;
+
+    return sortDirection === "asc" ? (
+      <ArrowUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ArrowDown className="ml-2 h-4 w-4" />
+    );
   };
 
   // Üst araç çubuğu render etme
@@ -300,7 +327,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
             )}
           </div>
         )}
-        
+
         {filters && (
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -310,18 +337,18 @@ const GenericTable: React.FC<GenericTableProps> = ({
           </button>
         )}
       </div>
-      
+
       {/* Sağ taraf: Dışa aktarma ve diğer işlemler */}
       <div className="flex items-center gap-2">
         {exportOptions && (
           <div className="relative">
-            <button
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
               Dışa Aktar
             </button>
             <div className="absolute z-10 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 hidden">
-              <div className="px-2 py-1.5 text-sm font-semibold">Format Seçin</div>
+              <div className="px-2 py-1.5 text-sm font-semibold">
+                Format Seçin
+              </div>
               <div className="h-px bg-muted"></div>
               {exportOptions.map((option) => (
                 <button
@@ -335,18 +362,19 @@ const GenericTable: React.FC<GenericTableProps> = ({
             </div>
           </div>
         )}
-        
-        {actions && actions.map((action, index) => (
-          <button
-            key={index}
-            onClick={action.onClick}
-            disabled={action.disabled}
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-          >
-            {/* {action.icon && React.isValidElement(action.icon) && React.cloneElement(action.icon as React.ReactElement, { className: "mr-2 h-4 w-4" })} */}
-            {action.label}
-          </button>
-        ))}
+
+        {actions &&
+          actions.map((action, index) => (
+            <button
+              key={index}
+              onClick={action.onClick}
+              disabled={action.disabled}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            >
+              {action.icon && <span className="mr-2">{action.icon}</span>}
+              {action.label}
+            </button>
+          ))}
       </div>
     </div>
   );
@@ -354,17 +382,20 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Filtre bileşenini render etme
   const renderFilterSection = () => {
     if (!showFilters) return null;
-    
+
     return (
       <div className="bg-slate-50 p-4 rounded-md mb-4 border">
         {filterComponent || (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filters && filters.map((filter, index) => (
-              <div key={index}>
-                <label className="text-sm font-medium mb-1 block">{filter.label}</label>
-                {filter.component}
-              </div>
-            ))}
+            {filters &&
+              filters.map((filter, index) => (
+                <div key={index}>
+                  <label className="text-sm font-medium mb-1 block">
+                    {filter.label}
+                  </label>
+                  {filter.component}
+                </div>
+              ))}
           </div>
         )}
       </div>
@@ -374,7 +405,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Sayfalama bileşenini render etme
   const renderPagination = () => {
     if (!pagination) return null;
-    
+
     return (
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
         {/* Sayfa başına öğe seçimi */}
@@ -386,7 +417,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
               className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {pageSizeOptions.map(size => (
+              {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
                   {size}
                 </option>
@@ -397,7 +428,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
             Toplam: {totalItems} öğe
           </span>
         </div>
-        
+
         {/* Sayfa numaraları ve gezinme */}
         <div className="flex items-center gap-1">
           <button
@@ -414,13 +445,13 @@ const GenericTable: React.FC<GenericTableProps> = ({
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          
+
           <div className="flex items-center mx-2">
             <span className="text-sm font-medium">
               Sayfa {currentPage} / {totalPages}
             </span>
           </div>
-          
+
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
@@ -443,24 +474,29 @@ const GenericTable: React.FC<GenericTableProps> = ({
   // Ana tablo render etme fonksiyonu
   const renderTable = () => {
     const currentData = getCurrentPageData();
-    
+
     // Tablo sınıflarını oluşturma
     const tableClasses = [
       "w-full caption-bottom text-sm",
       className,
       bordered ? "border border-collapse" : "",
       stickyHeader ? "overflow-auto" : "",
-    ].filter(Boolean).join(" ");
-    
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     // Satır sınıflarını oluşturma fonksiyonu
-    const getRowClasses = (row: any, index: number) => [
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-      onRowClick ? "cursor-pointer" : "",
-      hoverable ? "hover:bg-slate-50" : "",
-      striped && index % 2 === 1 ? "bg-slate-50" : "",
-      selectedRows.includes(row.id) ? "bg-blue-50" : "",
-    ].filter(Boolean).join(" ");
-    
+    const getRowClasses = (row: any, index: number) =>
+      [
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+        onRowClick ? "cursor-pointer" : "",
+        hoverable ? "hover:bg-slate-50" : "",
+        striped && index % 2 === 1 ? "bg-slate-50" : "",
+        selectedRows.includes(row.id) ? "bg-blue-50" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
     return (
       <div className="relative w-full overflow-auto">
         <table className={tableClasses}>
@@ -471,28 +507,46 @@ const GenericTable: React.FC<GenericTableProps> = ({
                   <input
                     type="checkbox"
                     checked={
-                      currentData.length > 0 && 
-                      currentData.every(row => selectedRows.includes(row.id))
+                      currentData.length > 0 &&
+                      currentData.every((row) => selectedRows.includes(row.id))
                     }
                     onChange={handleSelectAllRows}
                     className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                 </th>
               )}
-              
+
               {columns.map((column) => (
-                <th 
-                  key={column.accessor || column.id} 
+                <th
+                  key={column.accessor || column.id}
                   className={`
                     h-12 px-4 text-left align-middle font-medium text-muted-foreground
                     ${column.width ? `w-${column.width}` : ""}
-                    ${column.align === "right" ? "text-right" : column.align === "center" ? "text-center" : "text-left"}
-                    ${column.sortable && sortable ? "cursor-pointer select-none" : ""}
+                    ${
+                      column.align === "right"
+                        ? "text-right"
+                        : column.align === "center"
+                        ? "text-center"
+                        : "text-left"
+                    }
+                    ${
+                      column.sortable && sortable
+                        ? "cursor-pointer select-none"
+                        : ""
+                    }
                     ${dense ? "py-2" : ""}
                   `}
                   onClick={() => column.sortable && handleSort(column)}
                 >
-                  <div className={`flex items-center ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : ""}`}>
+                  <div
+                    className={`flex items-center ${
+                      column.align === "right"
+                        ? "justify-end"
+                        : column.align === "center"
+                        ? "justify-center"
+                        : ""
+                    }`}
+                  >
                     {column.header}
                     {column.sortable && sortable && renderSortIcon(column)}
                   </div>
@@ -500,7 +554,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
               ))}
             </tr>
           </thead>
-          
+
           <tbody>
             {loading ? (
               <tr>
@@ -536,7 +590,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                     dense,
                   });
                 }
-                
+
                 return (
                   <tr
                     key={row.id || rowIndex}
@@ -556,27 +610,27 @@ const GenericTable: React.FC<GenericTableProps> = ({
                         />
                       </td>
                     )}
-                    
+
                     {columns.map((column) => {
                       const cellKey = column.accessor || column.id;
-                      
+
                       // Hücre değerini alma
                       const getCellValue = () => {
                         if (column.cell) {
                           return column.cell(row);
                         }
-                        
+
                         if (column.accessor) {
                           return row[column.accessor];
                         }
-                        
+
                         if (column.getValue) {
                           return column.getValue(row);
                         }
-                        
+
                         return null;
                       };
-                      
+
                       // Özel hücre render etme fonksiyonu varsa kullan
                       if (customCellRender) {
                         return customCellRender({
@@ -588,13 +642,19 @@ const GenericTable: React.FC<GenericTableProps> = ({
                           dense,
                         });
                       }
-                      
+
                       return (
                         <td
                           key={cellKey}
                           className={`
                             p-4 align-middle
-                            ${column.align === "right" ? "text-right" : column.align === "center" ? "text-center" : "text-left"}
+                            ${
+                              column.align === "right"
+                                ? "text-right"
+                                : column.align === "center"
+                                ? "text-center"
+                                : "text-left"
+                            }
                             ${dense ? "py-2" : ""}
                             ${column.className || ""}
                           `}
@@ -617,13 +677,13 @@ const GenericTable: React.FC<GenericTableProps> = ({
     <div className="w-full">
       {/* Üst Araç Çubuğu */}
       {renderTopToolbar ? renderTopToolbar() : renderDefaultTopToolbar()}
-      
+
       {/* Filtreler */}
       {renderFilterSection()}
-      
+
       {/* Tablo */}
       {renderTable()}
-      
+
       {/* Alt Araç Çubuğu ve Sayfalama */}
       {renderBottomToolbar ? renderBottomToolbar() : renderPagination()}
     </div>

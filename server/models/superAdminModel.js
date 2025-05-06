@@ -197,6 +197,8 @@ const superAdminModel = {
       throw error;
     }
   }
+
+  
 };
 
 module.exports = superAdminModel;

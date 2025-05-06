@@ -10,71 +10,12 @@ const { getRoleName } = require("../utils/roleMap");
 
 const userModel = {
   // Find user by email in company database
-  findByEmail: async (companyPool, email) => {
+  findByEmail: async (email) => {
     try {
-      const [rows] = await companyPool.execute("SELECT * FROM users WHERE email = ?", [email]);
+      const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [email]);
       return rows.length ? rows[0] : null;
     } catch (error) {
       console.error("Error finding user by email:", error);
-      throw error;
-    }
-  },
-
-  // Register new user in company database
-  register: async (companyId, name, email, password, role = "member") => {
-    // Connect to company database
-    const dbName = `company_${companyId}`;
-    const companyPool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: dbName,
-      waitForConnections: true,
-      connectionLimit: 1,
-      queueLimit: 0
-    });
-    
-    try {
-      // Check if user already exists
-      const [existingUser] = await companyPool.execute(
-        "SELECT * FROM users WHERE email = ?",
-        [email]
-      );
-
-      if (existingUser.length > 0) {
-        return { success: false, message: "Email zaten kullanımda" };
-      }
-
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-      
-      // Generate token
-      const token = generateToken(email);
-
-      // Create new user
-      const [result] = await companyPool.execute(
-        "INSERT INTO users (name, email, password, login_token, role) VALUES (?, ?, ?, ?, ?)",
-        [name, email, hashedPassword, token, role]
-      );
-
-      if (result.affectedRows === 1) {
-        // Get the newly created user
-        const [newUser] = await companyPool.execute(
-          "SELECT id, name, email, role FROM users WHERE id = ?",
-          [result.insertId]
-        );
-
-        return {
-          success: true,
-          user: newUser[0],
-          token
-        };
-      } else {
-        return { success: false, message: "Kullanıcı kaydı başarısız oldu" };
-      }
-    } catch (error) {
-      console.error("Register error:", error);
       throw error;
     }
   },
@@ -159,7 +100,38 @@ const userModel = {
       console.error("Login error:", error);
       throw error;
     }
+  },
+
+  setUser: async (name, email, password, role_id, company_id) => {
+    try {
+      // Check if the email already exists in the database
+      const [existingUser] = await pool.execute(
+        "SELECT * FROM users WHERE email = ?",
+        [email]
+      );
+      
+      // If an existing user is found, return a message
+      if (existingUser.length > 0) {
+        return { success: false, message: "This email is already registered." };
+      }
+  
+      // If email is unique, continue with user creation
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const id = uuid();
+      const token = generateToken(email);
+  
+      const [result] = await pool.execute(
+        "INSERT INTO users (id, name, email, password, role_id, company_id, login_token) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [id, name, email, hashedPassword, role_id, company_id, token]
+      );
+  
+      return { success: true, message: "User successfully added." };
+    } catch (error) {
+      console.error("Error setting user:", error);
+      return { success: false, message: "An error occurred while adding the user." };
+    }
   }
+  
   
 
 };

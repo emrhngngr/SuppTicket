@@ -1,65 +1,8 @@
 // controllers/userController.js (updated version)
 const userModel = require("../models/userModel");
 const { pool } = require("../config/db");
+const { getRoleName, getRoleId } = require("../utils/roleMap");
 
-// Register user
-const register = async (req, res) => {
-  try {
-    const { name, email, password, companyId } = req.body;
-
-    if (!name || !email || !password || !companyId) {
-      return res.status(400).json({
-        success: false,
-        message: "Lütfen tüm alanları doldurun",
-      });
-    }
-
-    // Check if company exists and has valid license
-    const [companyResult] = await pool.execute(
-      `
-      SELECT c.id, l.expiry_date, l.status 
-      FROM companies c
-      JOIN licenses l ON c.id = l.company_id
-      WHERE c.id = ? AND c.status = 'active'
-    `,
-      [companyId]
-    );
-
-    if (!companyResult.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Geçersiz şirket",
-      });
-    }
-
-    const company = companyResult[0];
-
-    // Check if license is active and not expired
-    const currentDate = new Date();
-    const expiryDate = new Date(company.expiry_date);
-
-    if (company.status !== "active" || currentDate > expiryDate) {
-      return res.status(403).json({
-        success: false,
-        message: "Lisans süresi dolmuş veya aktif değil",
-      });
-    }
-
-    const result = await userModel.register(companyId, name, email, password);
-
-    if (!result.success) {
-      return res.status(400).json(result);
-    }
-
-    res.status(201).json(result);
-  } catch (error) {
-    console.error("Register error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Kullanıcı kaydı sırasında hata oluştu",
-    });
-  }
-};
 // Login user
 const login = async (req, res) => {
   try {
@@ -111,10 +54,37 @@ const getMe = async (req, res) => {
 // Get all users (for super admin)
 const getUsers = async (req, res) => {
   try {
-    const result = await userModel.getUsers(req.companyPool);
+    const result = await userModel.findByEmail(req.user.email);
+    const role = getRoleName(result.role_id);
+    console.log("role ==> ", role);
+    if (role === "super_admin") {
+      const [users] = await pool.execute("SELECT * FROM users");
+      result.users = users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: getRoleName(user.role_id),
+      }));
+    } else if (role === "admin") {
+      const [users] = await pool.execute(
+        "SELECT * FROM users WHERE company_id = ?",
+        [result.company_id]
+      );
+      result.users = users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: getRoleName(user.role_id),
+      }));
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Yetkisiz erişim",
+      });
+    }
 
     if (!result.success) {
-      return res.status(404).json(result);
+      return res.status(200).json(result);
     }
 
     res.status(200).json(result);
@@ -127,8 +97,61 @@ const getUsers = async (req, res) => {
   }
 };
 
+const setUser = async (req, res) => {
+  const user = await userModel.findByEmail(req.user.email);
+  const role = getRoleName(user.role_id);
+  if (role === "super_admin") {
+    try {
+      const { name, email, password, role, companyId } = req.body;
+      const role_id = getRoleId(role);
+
+      const result = await userModel.setUser(
+        name,
+        email,
+        password,
+        role_id,
+        companyId
+      );
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Set user error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Kullanıcı bilgileri alınırken hata oluştu",
+      });
+    }
+  } else if (role === "admin") {
+    try {
+      const { name, email, password, role } = req.body;
+      const role_id = getRoleId(role);
+
+      const result = await userModel.setUser(
+        name,
+        email,
+        password,
+        role_id,
+        user.company_id
+      );
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Set user error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Kullanıcı bilgileri alınırken hata oluştu",
+      });
+    }
+  }
+};
+
 module.exports = {
-  register,
   login,
   getMe,
+  getUsers,
+  setUser,
 };

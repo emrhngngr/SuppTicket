@@ -7,5 +7,12 @@ const roleMap = {
   
   const getRoleName = (roleId) => roleMap[roleId] || "user";
   
-  module.exports = { roleMap, getRoleName };
+  const getRoleId = (roleName) => {
+    const roleId = Object.keys(roleMap).find(
+      (key) => roleMap[key].toLowerCase() === roleName.toLowerCase()
+    );
+    return roleId ? parseInt(roleId) : 3;
+  };
+
+  module.exports = { roleMap, getRoleName, getRoleId };
   

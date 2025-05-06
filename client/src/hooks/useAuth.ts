@@ -20,7 +20,7 @@ export const useAuth = () => {
         setUser(null);
       }
     }
-    setIsLoading(false); // her durumda loading biter
+    setIsLoading(false);
   }, []);
 
   return { user, isAuthenticated: !!user, isLoading };

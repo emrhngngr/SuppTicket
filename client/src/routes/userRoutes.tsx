@@ -1,13 +1,9 @@
-import Companies from "../pages/dashboard/pages/companies";
-import Topics from "../pages/dashboard/pages/topics";
-import Tickets from "../pages/dashboard/pages/tickets";
-import Users from "../pages/dashboard/pages/users";
-import Dashboard from "../pages/dashboard";
+import Home from "../pages/main/home";
+import Topics from "../pages/main/topics";
+import Tickets from "../pages/main/tickets";
 
 export const userRoutes = [
-  { path: "/dashboard", element: <Dashboard /> },
-  { path: "/companies", element: <Companies /> },
+  { path: "/home", element: <Home /> },
   { path: "/topics", element: <Topics /> },
   { path: "/tickets", element: <Tickets /> },
-  { path: "/users", element: <Users /> },
 ];

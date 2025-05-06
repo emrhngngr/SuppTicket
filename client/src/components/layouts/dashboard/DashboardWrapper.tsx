@@ -1,5 +1,5 @@
 import React from "react";
-import PrivateRoute from "../../../routes/PrivateRoute";
+import PrivateRoute from "../../../routes/privateRoute";
 import DashboardLayout from "./DashboardLayout";
 
 const DashboardWrapper = ({ children }: any) => {

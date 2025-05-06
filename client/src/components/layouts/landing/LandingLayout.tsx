@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar';
+import Footer from './Footer';
 
 interface LandingLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ const LandingLayout: React.FC<LandingLayoutProps> = ({ children }) => {
       <main className="flex-grow">
         {children}
       </main>
+      <Footer />
     </div>
   );
 };

@@ -46,7 +46,12 @@ const LoginPage = () => {
         });
         
         // Use React Router navigation instead of window.location
-        navigate('/dashboard');
+        if (data.user?.role === "admin" || data.user?.role === "superadmin") {
+          navigate('/dashboard');
+        }
+        else if (data.user?.role === "user") {
+          navigate('/home');
+        }
       } else {
         Swal.fire({
           title: "Hata!",

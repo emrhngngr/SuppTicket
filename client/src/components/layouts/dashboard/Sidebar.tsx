@@ -1,4 +1,4 @@
-import { BarChart2, FileText, Home, Users, X } from "lucide-react";
+import { BarChart2, FileText, Home, User, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Sidebar = () => {
@@ -86,11 +86,12 @@ const Sidebar = () => {
         <div className="p-4 border-t dark:border-gray-700">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              <img
+              {/* <img
                 src="/api/placeholder/40/40"
                 alt="User Avatar"
                 className="object-cover w-full h-full"
-              />
+              /> */}
+              <User size={24} className="text-gray-600 dark:text-gray-400" />
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-800 dark:text-white">

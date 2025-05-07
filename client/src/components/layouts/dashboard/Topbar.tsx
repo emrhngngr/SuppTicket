@@ -65,12 +65,13 @@ const Topbar: React.FC = () => {
                 onClick={toggleProfileDropdown}
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                  <img 
+                <div className="w-8 h-8 rounded-full items-center justify-center flex bg-gray-200 overflow-hidden">
+                  {/* <img 
                     src="/api/placeholder/32/32" 
                     alt="Profile" 
                     className="w-full h-full object-cover"
-                  />
+                  /> */}
+                  <User size={24} className="text-gray-600 dark:text-gray-400 h-auto w-auto" />
                 </div>
               </button>
 

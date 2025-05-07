@@ -46,7 +46,7 @@ const LoginPage = () => {
         });
         
         // Use React Router navigation instead of window.location
-        if (data.user?.role === "admin" || data.user?.role === "superadmin") {
+        if (data.user?.role === "admin" || data.user?.role === "super_admin") {
           navigate('/dashboard');
         }
         else if (data.user?.role === "user") {

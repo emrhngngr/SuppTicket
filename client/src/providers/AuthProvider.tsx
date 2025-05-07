@@ -2,7 +2,9 @@
 import { useEffect } from 'react';
 import axios from 'axios';
 
-const AuthProvider = ({ children }) => {
+import { ReactNode } from 'react';
+
+const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const fetchMe = async () => {

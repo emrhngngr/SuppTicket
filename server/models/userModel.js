@@ -130,7 +130,21 @@ const userModel = {
       console.error("Error setting user:", error);
       return { success: false, message: "An error occurred while adding the user." };
     }
-  }
+  },
+
+  getProfile: async (email) => {
+    try {
+      const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [email]);
+      if (rows.length === 0) {
+        return { success: false, message: "User not found" };
+      }
+      const user = rows[0];
+      return { success: true, user };
+    } catch (error) {
+      console.error("Error getting user profile:", error);
+      return { success: false, message: "Error retrieving user profile" };
+    }
+  },
   
   
 

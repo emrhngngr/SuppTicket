@@ -13,6 +13,6 @@ router.get('/', protect, getUsers)
 router.post('/register', protect, setUser)
 
 // Protected routes
-// router.get('/me', protect, getMe);
+router.get('/me', protect, getMe);
 
 module.exports = router;

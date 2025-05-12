@@ -1,15 +1,14 @@
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Use React Router's navigation
+  const navigate = useNavigate();
 
   interface LoginResponse {
     success: boolean;
@@ -45,12 +44,11 @@ const LoginPage = () => {
           confirmButtonText: "Tamam",
         });
         
-        // Use React Router navigation instead of window.location
+        // Navigate based on user role
         if (data.user?.role === "admin" || data.user?.role === "super_admin") {
           navigate('/dashboard');
-        }
-        else if (data.user?.role === "user") {
-          navigate('/home');
+        } else if (data.user?.role === "user") {
+          navigate('/home'); // Changed from '/home' to '/' to match App.js route
         }
       } else {
         Swal.fire({
@@ -70,7 +68,6 @@ const LoginPage = () => {
     }
   };
   
-
   return (
     <div className="flex justify-between min-h-screen h-full w-full gap-x-12">
       <div className="flex flex-col justify-center w-full px-4 py-12 md:pl-12 lg:pl-24 xl:pl-32">
@@ -129,7 +126,7 @@ const LoginPage = () => {
             </button>
           </form>
         </div>
-        </div>
+      </div>
     </div>
   );
 };

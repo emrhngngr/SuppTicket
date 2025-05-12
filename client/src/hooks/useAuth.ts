@@ -10,7 +10,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadUser = () => {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
@@ -19,9 +19,21 @@ export const useAuth = () => {
       } catch {
         setUser(null);
       }
+    } else {
+      setUser(null);
     }
     setIsLoading(false);
+  };
+
+  useEffect(() => {
+    loadUser();
   }, []);
 
-  return { user, isAuthenticated: !!user, isLoading };
+  return {
+    user,
+    role: user?.role || null,
+    isAuthenticated: !!user,
+    isLoading,
+    refresh: loadUser, // Optional: Call this after login to force reload
+  };
 };

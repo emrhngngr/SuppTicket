@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
 import "./App.css";
 import ThemeProvider from "./context/ThemeContext";
 import LoginPage from "./pages/auth/LoginPage";
@@ -16,61 +16,82 @@ import DevicePage from "./pages/main/topics/contents/DevicePage";
 import BillingPage from "./pages/main/topics/contents/BillingPage";
 import AccountPage from "./pages/main/topics/contents/AccountPage";
 import SoftwarePage from "./pages/main/topics/contents/SoftwarePage";
-// import CreateTicketPage from "./pages/main/tickets/CreateTicketPage";
-// import NetworkPage from "./pages/topics/contents/NetworkPage";
-// import SecurityPage from "./pages/topics/contents/SecurityPage";
-// import AccessoriesPage from "./pages/topics/contents/AccessoriesPage";
-// import OtherPage from "./pages/topics/OtherPage";
+import { useAuth } from "./hooks/useAuth";
 
 const topicRoutes = [
   { path: "/topics/device", element: <DevicePage /> },
   { path: "/topics/billing", element: <BillingPage /> },
   { path: "/topics/account", element: <AccountPage /> },
   { path: "/topics/software", element: <SoftwarePage /> },
-  // { path: "/topics/network", element: <NetworkPage /> },
-  // { path: "/topics/security", element: <SecurityPage /> },
-  // { path: "/topics/accessories", element: <AccessoriesPage /> },
-  // { path: "/topics/other", element: <OtherPage /> },
 ];
+
+// ProtectedRoute component to handle role-based access
+const ProtectedRoute = ({ element, allowedRoles }) => {
+  const { role, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Loading...</div>; // Show loading state while user data is fetched
+  }
+  
+  if (!role) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/not-found" replace />;
+  }
+  
+  return element;
+};
 
 function App() {
   return (
     <ThemeProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingLayout><HomePage /></LandingLayout>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/pricing" element={<LandingLayout><PricingPage /></LandingLayout>} />
-            <Route path="/contact" element={<LandingLayout><ContactPage /></LandingLayout>} />
-            {/* Topic Routes */}
-            {topicRoutes.map(({ path, element }) => (
-              <Route
-                key={path}
-                path={path}
-                element={<MainWrapper>{element}</MainWrapper>}
-              />
-            ))}
-            {/* <Route path="/create-ticket" element={<MainWrapper><CreateTicketPage/></MainWrapper>} /> */}
-            {/* User Routes */}
-            {adminRoutes.map(({ path, element }) => (
-              <Route
-                key={path}
-                path={path}
-                element={<DashboardWrapper>{element}</DashboardWrapper>}
-              />
-            ))}
-            {userRoutes.map(({ path, element }) => (
-              <Route
-                key={path}
-                path={path}
-                element={<MainWrapper>{element}</MainWrapper>}
-              />
-            ))}
-            {/* 404 */}
-            <Route path="*" element={<LandingLayout><NotFound /></LandingLayout>} />
-          </Routes>
-        </Router>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingLayout><HomePage /></LandingLayout>} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/pricing" element={<LandingLayout><PricingPage /></LandingLayout>} />
+          <Route path="/contact" element={<LandingLayout><ContactPage /></LandingLayout>} />
+          {/* Topic Routes */}
+          {topicRoutes.map(({ path, element }) => (
+            <Route
+              key={path}
+              path={path}
+              element={<MainWrapper>{element}</MainWrapper>}
+            />
+          ))}
+          {/* Admin Routes (super_admin and admin only) */}
+          {adminRoutes.map(({ path, element }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute
+                  element={<DashboardWrapper>{element}</DashboardWrapper>}
+                  allowedRoles={['super_admin', 'admin']}
+                />
+              }
+            />
+          ))}
+          {/* User Routes (user role only) */}
+          {userRoutes.map(({ path, element }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute
+                  element={<MainWrapper>{element}</MainWrapper>}
+                  allowedRoles={['user']}
+                />
+              }
+            />
+          ))}
+          {/* 404 */}
+          <Route path="*" element={<LandingLayout><NotFound /></LandingLayout>} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }

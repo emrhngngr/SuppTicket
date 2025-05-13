@@ -92,7 +92,7 @@ const UsersPage: React.FC = () => {
       sortable: true
     },
     {
-      header: "Actions", //! edit butonu çalışmıyor
+      header: "Actions",
       cell: ({ row }: { row: { original: User } }) => (
         <div className="flex space-x-2">
           <button

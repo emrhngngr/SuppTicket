@@ -1,4 +1,3 @@
-// routes/userRoutes.js (updated version)
 const express = require('express');
 const { login, getMe, getUsers, setUser } = require('../controllers/userController');
 const { protect, protectSuperAdmin } = require('../middleware/authMiddleware');

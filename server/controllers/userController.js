@@ -26,7 +26,7 @@ const login = async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({
       success: false,
-      message: "Giriş sırasında hata oluştu",
+      message: "An error occurred during login",
       line: error.lineNumber,
     });
   }
@@ -34,8 +34,9 @@ const login = async (req, res) => {
 
 // Get current user profile
 const getMe = async (req, res) => {
+console.log("req ==> ", req);
   try {
-    const result = await userModel.getProfile(req.user.id, req.companyPool);
+    const result = await userModel.getProfile(req.user.email);
 
     if (!result.success) {
       return res.status(404).json(result);

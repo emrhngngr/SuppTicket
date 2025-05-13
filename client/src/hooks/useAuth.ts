@@ -10,7 +10,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadUser = () => {
+  const loadUser = async () => {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {

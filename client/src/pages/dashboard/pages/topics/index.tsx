@@ -1,3 +1,4 @@
+import { Select } from "@radix-ui/react-select";
 import { Edit, PlusCircle, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -6,7 +7,7 @@ interface Topic {
   title: string;
   description: string;
   createDate: string;
-  roles: string[];
+  roles?: string[];
   active?: boolean | string;
 }
 
@@ -21,47 +22,79 @@ const Topics = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [newTopic, setNewTopic] = useState<NewTopic>({ title: "", description: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTableData = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/topics", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        }
-      });
+  setIsLoading(true);
+  setError(null);
 
-      if (!res.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data: Topic[] = await res.json();
-      setTopics(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please log in to continue.");
+      return;
     }
-  };
+
+    const response = await fetch("http://localhost:5000/api/users/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("User data could not be fetched");
+    }
+
+    const userData = await response.json();
+    console.log("userData ==> ", userData);
+
+
+    const res = await fetch(`http://localhost:5000/api/topics`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Veriler alınamadı");
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data)) {
+      throw new Error("API did not return an array");
+    }
+
+    setTopics(data);
+  } catch (error) {
+    console.error("Veri alınırken hata:", error);
+    setError("Konular yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Token not found!");
+      setError("Oturum bulunamadı! Lütfen giriş yapın.");
       return;
     }
 
     fetchTableData();
   }, []);
 
-  const filteredTopics = topics.filter(
-    (topic) =>
-      topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      topic.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTopics = Array.isArray(topics)
+    ? topics.filter(
+        (topic) =>
+          topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          topic.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   const handleAddTopic = async (
     e?: React.FormEvent<HTMLButtonElement>
@@ -72,14 +105,14 @@ const Topics = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Oturum bulunamadı!");
+        setError("Oturum bulunamadı!");
         return;
       }
 
       const response = await fetch("http://localhost:5000/api/topics", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newTopic),
@@ -91,34 +124,32 @@ const Topics = () => {
         setNewTopic({ title: "", description: "" });
         setIsModalOpen(false);
       } else {
-        alert("Konu eklenirken bir hata oluştu!");
+        setError("Konu eklenirken bir hata oluştu!");
       }
     } catch (error) {
       console.error("Konu eklenirken hata:", error);
-      alert("Bir hata oluştu!");
+      setError("Bir hata oluştu!");
     } finally {
       setIsLoading(false);
     }
   };
 
   const columns = [
-    { key: "title", label: "Title" },
-    { key: "description", label: "Description" },
-    { key: "createDate", label: "Create Date" },
-    { key: "roles", label: "Roles" },
-    { key: "active", label: "Active" },
+    { key: "title", label: "Başlık" },
+    { key: "description", label: "Açıklama" },
+    { key: "createDate", label: "Oluşturma Tarihi" },
   ];
 
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Topics</h1>
+        <h1 className="text-2xl font-bold">Konular</h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
           <PlusCircle size={20} />
-          <span>New Topic</span>
+          <span>Yeni Konu</span>
         </button>
       </div>
 
@@ -129,71 +160,80 @@ const Topics = () => {
         />
         <input
           type="text"
-          placeholder="Search in topics..."
+          placeholder="Konularda ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <div className="overflow-x-auto shadow-md rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                >
-                  {col.label}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="text-center text-gray-500">Yükleniyor...</div>
+      ) : (
+        <div className="overflow-x-auto shadow-md rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                {columns.map((col) => (
+                  <th
+                    key={col.key}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    {col.label}
+                  </th>
+                ))}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  İşlemler
                 </th>
-              ))}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                İşlemler
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-            {filteredTopics.length > 0 ? (
-              filteredTopics.map((topic) => (
-                <tr key={topic.id}>
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
-                    >
-                      {Array.isArray(topic[col.key as keyof Topic])
-                        ? (topic[col.key as keyof Topic] as string[]).join(", ")
-                        : topic[col.key as keyof Topic]?.toString()}
-                    </td>
-                  ))}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    <div className="flex space-x-2">
-                      <button className="text-blue-500 hover:text-blue-700">
-                        <Edit size={18} />
-                      </button>
-                      <button className="text-red-500 hover:text-red-700">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+              {filteredTopics.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length + 1}
+                    className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-300"
+                  >
+                    {topics.length === 0
+                      ? "Tabloda henüz konu yok."
+                      : "Arama kriterlerine uygun konu bulunamadı."}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={columns.length + 1}
-                  className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-300"
-                >
-                  Hiçbir konu bulunamadı
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filteredTopics.map((topic) => (
+                  <tr key={topic.id}>
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        {topic[col.key as keyof Topic]?.toString()}
+                      </td>
+                    ))}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <div className="flex space-x-2">
+                        <button className="text-blue-500 hover:text-blue-700">
+                          <Edit size={18} />
+                        </button>
+                        <button className="text-red-500 hover:text-red-700">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
@@ -214,6 +254,9 @@ const Topics = () => {
                   }
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
+              </div>
+              <div>
+                <Select value="getCategories"/> 
               </div>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

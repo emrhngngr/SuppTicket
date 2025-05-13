@@ -37,18 +37,11 @@ const LoginPage = () => {
         localStorage.setItem('token', data.token || '');
         localStorage.setItem('user', JSON.stringify(data.user || {}));
         
-        Swal.fire({
-          title: "Başarılı!",
-          text: "Başarıyla giriş yaptınız.",
-          icon: "success",
-          confirmButtonText: "Tamam",
-        });
-        
         // Navigate based on user role
         if (data.user?.role === "admin" || data.user?.role === "super_admin") {
           navigate('/dashboard');
         } else if (data.user?.role === "user") {
-          navigate('/home'); // Changed from '/home' to '/' to match App.js route
+          navigate('/home');
         }
       } else {
         Swal.fire({

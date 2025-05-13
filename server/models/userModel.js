@@ -134,19 +134,18 @@ const userModel = {
 
   getProfile: async (email) => {
     try {
-      const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [email]);
+      const [rows] = await pool.execute("SELECT name, email, role_id, company_id, created_at, updated_at FROM users WHERE email = ?", [email]);
       if (rows.length === 0) {
         return { success: false, message: "User not found" };
       }
       const user = rows[0];
+      console.log("user ==> ", user);
       return { success: true, user };
     } catch (error) {
       console.error("Error getting user profile:", error);
       return { success: false, message: "Error retrieving user profile" };
     }
   },
-  
-  
 
 };
 

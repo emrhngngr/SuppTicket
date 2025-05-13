@@ -4,7 +4,7 @@ const topicModel = require('../models/topicModel');
 // Get all companies with license info
 const getTopics = async (req, res) => {
   try {
-    const result = await topicModel.getAllCompanyTopics(req.user.company_id);
+    const result = await topicModel.getCompanyTopics(req.user.company_id);
     return res.status(200).json(result);
   } catch (error) {
     console.error('Get all companies error:', error);

@@ -4,7 +4,7 @@ const generateToken = require("../utils/generateToken");
 const mysql = require("mysql2/promise");
 
 const superAdminModel = {
-  getAllCompanyTopics: async (companyId) => {
+  getCompanyTopics: async (companyId) => {
     try {
       const [rows] = await pool.execute(
         "SELECT * FROM topics WHERE company_id = ?",
